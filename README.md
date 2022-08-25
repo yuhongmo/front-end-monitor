@@ -1,29 +1,51 @@
-# front-end-monitor
+# 前言
 
-## 环境
+本次前端监控系统参考以下项目实现
 
-node.js+php+mysql
+[https://github.com/miracle90/monitor](https://github.com/miracle90/monitor)
 
-
-
-## 初始化
-
-- 终端命令：
-
-  ```bash
-  $ npm install
-  $ node app.js
-  ```
-
-- 配置数据库
-  1. 修改 web/db/index.js 中的 mysql 配置，包括用户名、用户密码、数据库名字
-  2. 在数据库中导入 front_data.sql
-
-- 打开 index.html 可以运行异常监控
+由于我们的项目有一定的特殊性，需要自己进行一些代码补全和相关操作的学习
 
 
 
-## 监测
+# 使用方法
+
+1. 进入 http://www.front-end-monitor.cn/ 页面，点击右上角的"下载监测文件"，下载 monitor.js 文件
+
+2. 在需要测试的html文件头部，导入以下代码。注：上下顺序不可颠倒
+
+   ```html
+   <script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
+   <script src = "./monitor.js"></script>
+   ```
+
+3. 刷新 http://www.front-end-monitor.cn/ 页面，查看错误信息
+
+
+
+# 整体框架
+
+通过无痕埋点的方式向监控对象植入前端代码，并通过ajax传送到服务器端
+
+服务器由express框架暂时搭建于本地
+
+服务器端将接受到的数据存入云服务器上的mysql数据库
+
+可视化界面将实时向服务器端请求数据并展示于界面上
+
+
+
+# 环境
+
+- 前端：html+css+javascript+ajax
+
+- 后端：node.js
+- 数据库：mysql
+- 可视化界面：echarts
+
+
+
+# 监测
 
 异常监控，包括:JS异常、接口异常、白屏异常、资源异常等
 
@@ -33,11 +55,11 @@ node.js+php+mysql
 
 HTTP请求监控，包括:请求链路、成功率、返回信息等
 
-### 异常
+## 异常监测
 
-#### Js错误
+### Js异常
 
-##### 资源加载异常
+#### 资源加载
 
 ```javascript
 {
@@ -47,11 +69,9 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 
     timestamp: Date.now(), //时间戳
 
-    userAgent: userAgent.parse(navigator.userAgent).name, //访问人
-
     kind: "stability", // 监控指标的大类，稳定性
 
-    type: "resourceError", // 小类型，这是一个错误
+    type: "resourceError", // 小类型，这是一个资源错误
 
     message: event.message, // 报错信息
 
@@ -65,9 +85,9 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 }
 ```
 
-##### 普通JS异常
+#### 普通JS异常
 
-```js
+```
 {
     title: document.title, //页面标题
 
@@ -75,11 +95,9 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 
     timestamp: Date.now(), //时间戳
 
-    userAgent: userAgent.parse(navigator.userAgent).name, //访问人
-
     kind: "stability", // 监控指标的大类，稳定性
 
-    type: "jsError", // 小类型，这是一个错误
+    type: "jsError", // 
 
     message: event.message, // 报错信息
 
@@ -93,7 +111,7 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 }
 ```
 
-##### promise错误
+### promise
 
 ```javascript
 {
@@ -102,8 +120,6 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
     	url: location.href, //页面url
 
     	timestamp: Date.now(), //时间戳
-
-    	userAgent: userAgent.parse(navigator.userAgent).name, //访问人
 
         kind: "stability", // 监控指标的大类，稳定性
 
@@ -131,8 +147,6 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 
     	timestamp: Date.now(), //时间戳
 
-    	userAgent: userAgent.parse(navigator.userAgent).name, //访问人   
-
         kind: "stability",
 
         type: "blank",
@@ -147,62 +161,92 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 }
 ```
 
-### 状态
+### 接口异常
 
-#### pv&uv
+```
+{
+        title: document.title, //页面标题
+
+    	url: location.href, //页面url
+
+    	timestamp: Date.now(), //时间戳
+
+        kind: "stability",
+
+        type: "xhr",
+
+        eventType: type,
+
+        pathname: this.logData.url,
+
+        status: status + "-" + statusText, // 状态码
+
+        duration,
+
+        response: this.response ? JSON.stringify(this.response) : "", // 响应体
+
+        params: body || "", // 入参
+}
+```
+
+## 行为数据
+
+### pv&uv
+
+只要知道目前访问者的IP，对于UV和PV的区分可以在可视化前端做
 
 ```javascript
 {
-      title: document.title, //页面标题
+        title: document.title, //页面标题
 
     	url: location.href, //页面url
 
     	timestamp: Date.now(), //时间戳
 
-    	userAgent: userAgent.parse(navigator.userAgent).name, //访问人
-
         kind: "business",
 
         type: "pv",
 
-        effectiveType: connection.effectiveType, //网络环境
-          
-        rtt: connection.rtt, //往返时间
-          
-    		screen: `${window.screen.width}x${window.screen.height}`, //设备分辨率
+	effectiveType: connection.effectiveType, //网络环境
+
+    	rtt: connection.rtt, //往返时间
+
+   	screen: `${window.screen.width}x${window.screen.height}`, //设备分辨率
 }
 ```
 
-#### stayTime
+### staytime
 
-```js
+```javascript
 {
-      title: document.title, //页面标题
+        title: document.title, //页面标题
 
     	url: location.href, //页面url
 
     	timestamp: Date.now(), //时间戳
 
-    	userAgent: userAgent.parse(navigator.userAgent).name, //访问人
-
         kind: "business",
 
-        type: "pv",
+        type: "staytime",
 
-        stayTime
+        stayTime,
 }
 ```
 
-
-
-### 性能指标
+## 性能指标
 
 性能指标的单位都是时间ms
 
-#### 加载时间
+### 加载时间指标
 
 ```javascript
 {
+	title: document.title, //页面标题
+
+    	url: location.href, //页面url
+
+    	timestamp: Date.now(), //时间戳
+
 				kind: "performance", // 用户体验指标/性能指标
 				type: "timing", // 统计每个阶段的时间
 				dnsTime: domainLookupEnd - domainLookupStart, // DNS域名解析耗时
@@ -217,10 +261,16 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 }
 ```
 
-#### 绘制性能
+### 绘制性能指标
 
 ```javascript
 {
+	title: document.title, //页面标题
+
+    	url: location.href, //页面url
+
+    	timestamp: Date.now(), //时间戳
+
 				kind: "performance",
 				type: "paint",
 				firstPaint: FP ? formatTime(FP.startTime) : 0,
@@ -232,3 +282,12 @@ HTTP请求监控，包括:请求链路、成功率、返回信息等
 
 
 
+# 数据发送
+
+## 方法1
+
+采集到数据后，需要将其传递给可视化界面做呈现，传递地点可以选择阿里云的日志服务（先登录阿里云，获取一个地址），则可视化的部分由阿里云集成好
+
+## 方法2（采用）
+
+使用express搭建服务器，监听前端发出的post（数据采集）和get（数据获取）请求，并分别从数据库中存入取出数据

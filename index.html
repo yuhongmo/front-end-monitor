@@ -12,7 +12,7 @@
     ·用户行为数据，如:PV、UV、页面停留时间等
     ·HTTP请求监控，包括:请求链路、成功率、返回信息等
 -->
-<script src="./js/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
 <script src = "./monitor.js"></script>
 
 <style>
@@ -106,20 +106,14 @@
           }
           xhr.send("type=xhrError")
         }
-    </script>
-    <script>
-        // element: 要设置为 FMP 的元素
-        function setFMP(element) {
-              element.setAttribute("elementtiming", "meaningful")
-            }
-            // 性能数据，FMP。需要在元素中添加自定义属性 elementtiming="meaningful"
-            setTimeout(() => {
-              let h1 = document.createElement("h1");
-              h1.innerHTML = "FMP";
-              h1.style.display = "none"
-              setFMP(h1)
-              document.body.appendChild(h1)
-            }, 2000);
+        setTimeout(() => {
+          let h1 = document.createElement("h1");
+          h1.innerHTML = "FMP";
+          h1.style.display = "none"
+          // 性能数据，FMP。需要在元素中添加自定义属性 elementtiming="meaningful"
+          setFMP(h1)
+          document.body.appendChild(h1)
+        }, 2000);
     </script>
 </body>
 </html>
